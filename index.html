@@ -1,27 +1,431 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <!-- Import Vega & Vega-Lite (does not have to be from CDN) -->
-  <script src="https://cdn.jsdelivr.net/npm/vega@5.20.2"></script>
-  <script src="https://cdn.jsdelivr.net/npm/vega-lite@5.1.0"></script>
-  <script src="https://cdn.jsdelivr.net/npm/vega-embed@6.17.0"></script>
-  
-  
-  <!-- CSS file -->
-  <link rel="stylesheet" type="text/css" href="css/styles.css" media="all">
-  
+  <meta charset="UTF-8">
+  <title>The YouTube Universe</title>
+  <link rel="stylesheet" href="css/style.css">
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/d3-cloud/1.2.5/d3.layout.cloud.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vega@5"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vega-lite@5"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vega-wordcloud@2.0.0/build/vega-wordcloud.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vega-embed@6"></script>
+  <script src="https://cdn.plot.ly/plotly-2.31.0.min.js"></script>
 </head>
+
 <body>
-  
-<div id="symbol_map"></div>
+  <!-- Parallax background -->
+  <div class="parallax-bg"></div>
 
-<script type="text/javascript">
+  <!-- Central content strip -->
+  <div class="content-strip">
+    <header>
+      <h1>The YouTube Universe</h1>
+      <p>Author: Phoebe Ng</p>
+      <p>Date Published: 11 Oct 2025</p>
 
-  var spec2 = "js/map.vg.json";
-  vegaEmbed('#symbol_map', spec2).then(function(result) {
-    // Access the Vega view instance (https://vega.github.io/vega/docs/api/view/) as result.view
-  }).catch(console.error);
-</script>
+  <!-- Introduction body text -->
+      <p style="text-align: left;">
+        YouTube is one of the largest video sharing platform in the world. It is a platform where anyone can upload videos for others to watch, like and share. There is a wide range of content that includes entertainment, music, education, vlogs etc. It was founded on February 14 2005 created by Chad Hurley, Jawed Karim, and Steve Chen, who were former employees of PayPal. It is now owned by Google. This webpage will explore data of the top performing channels, including MrBeast. In doing so, I hope aspiring YouTubers can use this for inspiration and gain a better understading for how to make a successful YouTube channel.
+    </p>
 
+      <!-- sidemen image -->
+    <figure> 
+        <img src="images/Sidemen.png" alt="Sidemen Youtube Video Vectorised" style="width:900px;height:450px;">
+        <figcaption>Fig.1 - vector image of a youtube page, featuring the Sidemen.</figcaption>
+    </figure>
+    </header>
+
+    <!-- insert idioms -->
+    <div id="idioms-container"></div>
+
+    <!-- YouTube Video at the end -->
+    <div id="youtube-video" style="width: 80%; max-width: 900px; margin: 0px auto;">
+      <header>
+        <h2>How to Start a Successful YouTube Channel</h2>
+        <p style="text-align: left;"> This video provides a step-by-step guide to starting a successful YouTube channel, including three key factors that contribute to growth.</p>
+      </header>
+      <iframe width="100%" height="500" 
+              src="https://www.youtube.com/embed/T2M9hSswlIs" 
+              title="How to start a Successful YouTube Channel" 
+              frameborder="0" 
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+              allowfullscreen>
+      </iframe>
+    </div>
+
+  </div>
+
+  <script>
+    const bg = document.querySelector('.parallax-bg');
+    window.addEventListener('scroll', () => {
+      const scrollTop = window.scrollY;
+      bg.style.transform = `translateY(${-scrollTop * 0.3}px)`; 
+    });
+
+    const idioms = [
+      { file: "js/word-cloud.json",
+        description: "The above word cloud shows some tags from YouTube (US). We can see that 'Comedy' and 'Funny' are the top tags, indicating that youtube is mostly an entertainment platform in the United States. We can see some trends YouTube has popularised, such as cat videos, GRWMs, ASMR, and 'try not to laugh' challenges."
+      },
+      {
+        file: "js/map-penetration.json",
+        title: "YouTube Penetration Rate by Country",
+        description: "This map shows the percentage of the population using YouTube in each country in February 2024 (penetration rate). Bahrain has the highest penetration rate at 98.2%, Philippines the lowest at 24.5%, and Australia at 82.5%. Even though India has the higest users in February 2024 at 462 million users, it only has a 61.5% penetration rate. This means that around 40% of the Indian population did not access YouTube in February 2024. Unfortunately, there is no data on the penetration rate for countries which has access to YouTube, such as Russia, countries in Africa and South America."
+      },
+      {
+        file: "js/subcriber-flow-sankey.json",
+        title: "Subscriber Flow",
+        description: "This sankey diagram shows the flow of subscribers from the category, to the Country to the channel. We can see that music is the most subscribed category, sharing its subscribers in Australia, India, United Kingdom and Brazil. It also shows us the top 5 most subscribed channels in each country that is displayed. "
+      },
+      {
+        file: "js/top20_youtubers_network.json",
+        title: "YouTube Network by Category",
+        description: "Here is a network of the top 20 YouTube channels connected by category. It may be confusing, but 'Gaming', 'Sports', and 'Music' is a YouTube channel (at the time of writing), that includes a collection of such videos. We can see that T-Series, 'Music', BANGTANTV, Justin Bieber and Zee Music Company are all interconnected by the category, Music. On the other hand, 5-Minute Crafts is isolated as it is the only Howto & Style channel in the top 20 channels"
+      },
+      {
+        file: "js/bubble-chart.json",
+        title: "Most Subscribed YouTubers Statistics",
+        description: "Here, we can see data on the top 1000 subscribed YouTube channels. It may look like a paint splatter at first instance, but if you click on specific categories in the legend, you can focus on that category. You can zoom in and out, and pan for a more interactive experience. Also, notice how the graph starts at 10 million subscribers instead of zero. That's because the top 1000 channels all have at least 10 million subscribers. "
+      },
+      {
+        file: "js/mrbeast_line_chart.json",
+        title: "MrBeast's Performance over Time",
+        description: "From humble beginnings in 2012 to creating consistent viral videos, this line chart shows MrBeast's views over time. We can see there's a spike on November 2021 when he reached his peak. This was during the COVID pandemic when the YouTube viewership increased. Since then, there is a downwards trend in viewership, in which one of the factors may be due to the controversy in July 2024 about the poor conditions of MrBeast's competitions. However, he is still undeniably one of the most watched channels globally."
+      },
+      {
+        file: "js/mrbeast_bar_chart.json",
+        title: "Top 10 most viewed MrBeast videos",
+        description: ""
+      }
+    ];
+
+    const container = document.getElementById('idioms-container');
+
+    idioms.forEach((idiom, index) => {
+      const wrapper = document.createElement('div');
+      wrapper.style.display = 'flex';
+      wrapper.style.flexDirection = 'column';
+      wrapper.style.alignItems = 'center';
+      wrapper.style.width = '100%';
+        // Reduce bottom space after the last chart (MrBeast bar chart)
+        if (idiom.file.includes('mrbeast_bar_chart.json')) {
+        wrapper.style.marginBottom = '-40px';
+        } else {
+        wrapper.style.marginBottom = '40px';
+        }
+
+      container.appendChild(wrapper);
+
+  // 👇 Insert the MrBeast section right after the bubble chart
+  if (idiom.file.includes("bubble-chart.json")) {
+    const mrbeastSection = document.createElement('div');
+    mrbeastSection.id = "mrbeast-section";
+    mrbeastSection.style.width = "80%";
+    mrbeastSection.style.maxWidth = "700px";
+    mrbeastSection.style.margin = "60px auto";
+    mrbeastSection.style.textAlign = "left";
+
+    mrbeastSection.innerHTML = `
+      <h2 style="text-align: center;">MrBeast</h2>
+      <p style="font-size: 16px; line-height: 1.5;">
+        Jimmy Donaldson, known online as <strong>MrBeast</strong>, is an American YouTuber and philanthropist 
+        known for his elaborate challenges, massive giveaways, and large-scale stunts. He’s one of the most 
+        subscribed creators on the platform, often using his influence and success to fund charitable causes 
+        and attention-grabbing social experiments.
+      </p>
+      <figure style="text-align: center; margin-top: 20px;">
+        <img src="images/mrbeast_illustration.jpg" alt="MrBeast Illustration" 
+             style="width: 80%; max-width: 800px; border-radius: 12px; display: block; margin: 0 auto;">
+        <figcaption" style="font-size: 0.9em; color: #666; display: block; margin-top: 10px; font-style: italic;">
+          Fig.2 — Illustration of Jimmy Donaldson.
+        </figcaption>
+      </figure>
+    `;
+
+    container.appendChild(mrbeastSection);
+  }
+
+
+      // Special classes for charts
+      if (idiom.file.includes("mrbeast_line_chart.json")) wrapper.classList.add("mrbeast-chart");
+      if (idiom.file.includes("mrbeast_bar_chart.json")) wrapper.classList.add("mrbeast-bar-chart");
+
+      // Title
+      if (idiom.title) {
+        const titleEl = document.createElement('h3');
+        titleEl.className = 'idiom-title';
+        titleEl.textContent = idiom.title;
+        wrapper.appendChild(titleEl);
+      }
+
+      // Chart container
+      const chartContainer = document.createElement('div');
+      const isBarChart = idiom.file.includes('mrbeast_bar_chart.json');
+
+      if (isBarChart) {
+        chartContainer.style.display = 'flex';
+        chartContainer.style.flexDirection = 'row';
+        chartContainer.style.alignItems = 'flex-start';
+        chartContainer.style.justifyContent = 'space-between';
+        chartContainer.style.width = '100%';
+        chartContainer.style.maxWidth = '1200px';
+      } else {
+        chartContainer.style.display = 'flex';
+        chartContainer.style.flexDirection = 'column';
+        chartContainer.style.width = '80%';
+        chartContainer.style.maxWidth = '900px';
+      }
+
+      wrapper.appendChild(chartContainer);
+
+      // Chart div
+      const idiomDiv = document.createElement('div');
+      idiomDiv.id = 'vis' + index;
+      idiomDiv.style.width = isBarChart ? '65%' : '100%';
+      idiomDiv.style.height = '600px';
+      chartContainer.appendChild(idiomDiv);
+
+      // Right-side text for bar chart
+      if (isBarChart) {
+        const extraTextDiv = document.createElement('div');
+        extraTextDiv.className = 'idiom-textbox';
+        extraTextDiv.style.flex = '1 1 400px';
+        extraTextDiv.style.maxWidth = '500px';
+        extraTextDiv.style.marginLeft = '20px';
+        extraTextDiv.style.whiteSpace = 'normal';
+        extraTextDiv.style.fontSize = '16px';
+
+        extraTextDiv.innerHTML = `
+          The bar chart to the left shows the top 10 MrBeast videos of all time. We can see that 
+          <a href="https://www.youtube.com/watch?v=se50viFJ0AQ" target="_blank">'Would you fly to Paris for a Baguette?'</a> has the most views at around 1.6 Billion views, followed by 
+          <a href="https://www.youtube.com/shorts/YlvcFJOE-OE" target="_blank">'Giving iPhones Instead Of Candy on Halloween'</a> at around 1.5 Billion views and 
+          <a href="https://www.youtube.com/shorts/IQxea9UB1nQ" target="_blank">'$100,000,000 Car Doors'</a> at around 1.2 Billion views.
+
+          We can see a reoccuring theme here. These videos are YouTube Shorts, which are essentially YouTube videos in a short, scrollable form, lasting less than 3 minutes long. So creating shorts can increases your chances to gain more exposure and views, but it will not increase your profits as much as long form videos.
+        `
+        
+        ;
+        chartContainer.appendChild(extraTextDiv);
+      }
+
+      // Load JSON for charts
+      fetch(idiom.file)
+        .then(response => response.json())
+        .then(spec => {
+          const idiomDivId = idiomDiv.id;
+
+          // D3-cloud word cloud
+          if (spec.type === "d3-cloud") {
+            const svg = d3.select("#" + idiomDivId)
+              .append("svg")
+              .attr("width", spec.width)
+              .attr("height", spec.height);
+
+            Papa.parse(spec.csv, {
+              download: true,
+              header: true,
+              dynamicTyping: true,
+              complete: function(results) {
+                const data = results.data.filter(d => d.word && d.count);
+                const maxCount = d3.max(data, d => d.count);
+                const minCount = d3.min(data, d => d.count);
+
+                const fontSize = d3.scaleSqrt()
+                  .domain([minCount, maxCount])
+                  .range([spec.minFont, spec.maxFont]);
+
+                const color = d3.scaleLinear()
+                  .domain([minCount, maxCount])
+                  .range(spec.colors)
+                  .interpolate(d3.interpolateHcl);
+
+                const layout = d3.layout.cloud()
+                  .size([spec.width, spec.height])
+                  .words(data.map(d => ({text: d.word, size: fontSize(d.count), count: d.count})))
+                  .padding(5)
+                  .rotate(() => 0)
+                  .font("sans-serif")
+                  .fontSize(d => d.size)
+                  .on("end", words => {
+                    svg.append("g")
+                      .attr("transform", `translate(${spec.width/2},${spec.height/2})`)
+                      .selectAll("text")
+                      .data(words)
+                      .enter().append("text")
+                      .attr("class", "word")
+                      .style("font-size", d => d.size + "px")
+                      .style("font-weight", "bold")
+                      .style("fill", d => color(d.count))
+                      .attr("text-anchor", "middle")
+                      .attr("transform", d => `translate(${d.x},${d.y})`)
+                      .text(d => d.text)
+                      .append("title")
+                      .text(d => `${d.text}: ${d.count}`);
+                  });
+
+                layout.start();
+              }
+            });
+          }
+          // Plotly chart
+          else if (spec.data && spec.layout) {
+            Plotly.newPlot(idiomDivId, spec.data, spec.layout);
+          }
+          // Force-directed network JSON
+          else if (spec.nodes && spec.edges) {
+            const nodes = spec.nodes;
+            const edges = spec.edges;
+
+            // Force-directed layout
+            const nIter = 200;
+            const k = 0.2;
+            nodes.forEach(n => { n.x = Math.random(); n.y = Math.random(); });
+            for (let iter = 0; iter < nIter; iter++) {
+              nodes.forEach(n1 => {
+                let dx = 0, dy = 0;
+                nodes.forEach(n2 => {
+                  if (n1 === n2) return;
+                  let distX = n1.x - n2.x;
+                  let distY = n1.y - n2.y;
+                  let dist = Math.sqrt(distX*distX + distY*distY) + 0.01;
+                  dx += (distX / dist) * (k / dist);
+                  dy += (distY / dist) * (k / dist);
+                });
+                n1.x += dx;
+                n1.y += dy;
+              });
+            }
+
+            // Scale subscribers -> node size
+            const minSize = 10;
+            const maxSize = 50;
+            const subs = nodes.map(n => n.size);
+            const minSubs = Math.min(...subs);
+            const maxSubs = Math.max(...subs);
+            const scaledSizes = subs.map(s => minSize + (maxSize - minSize) * ((s - minSubs) / (maxSubs - minSubs)));
+
+            // Edge traces
+            const edgeTraces = edges.map(e => {
+              const from = nodes.find(n => n.id === e.from);
+              const to = nodes.find(n => n.id === e.to);
+              if (!from || !to) return null;
+              return {
+                type: "scatter",
+                mode: "lines",
+                x: [from.x, to.x],
+                y: [from.y, to.y],
+                line: { width: 1, color: "lightgray" },
+                hoverinfo: "none",
+                opacity: 1
+              };
+            }).filter(Boolean);
+
+            // Node trace
+            const nodeTrace = {
+              type: "scatter",
+              mode: "markers+text",
+              x: nodes.map(n => n.x),
+              y: nodes.map(n => n.y),
+              text: nodes.map(n => n.label),
+              textposition: "top center",
+              hovertext: nodes.map(n => n.title),
+              hoverinfo: "text",
+              marker: {
+                size: scaledSizes,
+                color: nodes.map(n => n.color || "skyblue"),
+                line: { width: 1, color: "black" },
+                opacity: 1
+              },
+              textfont: { color: "black" }
+            };
+
+            const gd = document.getElementById(idiomDivId);
+            Plotly.newPlot(gd, [...edgeTraces, nodeTrace], {
+              title: "Network of the top 20 YouTubers by subscribers, with edges showing shared categories.",
+              xaxis: { visible: false },
+              yaxis: { visible: false },
+              showlegend: false,
+              hovermode: "closest"
+            });
+
+            // Highlight and reset functions
+            function highlightNode(hoveredNode) {
+              const neighbors = new Set([hoveredNode.id]); // include hovered node
+              edges.forEach(e => {
+                if (e.from === hoveredNode.id) neighbors.add(e.to);
+                if (e.to === hoveredNode.id) neighbors.add(e.from);
+              });
+
+              const newOpacities = nodes.map(n => neighbors.has(n.id) ? 1 : 0.1);
+              const newTextColors = nodes.map(n => neighbors.has(n.id) ? "black" : "rgba(0,0,0,0.2)");
+
+              // Update edges
+              edgeTraces.forEach((_, i) => {
+                Plotly.restyle(gd, { opacity: [edges.map((e,j)=> (neighbors.has(e.from) && neighbors.has(e.to)) ? 1 : 0.05)[i]] }, [i]);
+              });
+
+              // Update nodes
+              Plotly.restyle(gd, {
+                "marker.opacity": [newOpacities],
+                "textfont.color": [newTextColors]
+              }, [edgeTraces.length]);
+            }
+
+            function resetGraph() {
+              edgeTraces.forEach((_, i) => {
+                Plotly.restyle(gd, { opacity: [1] }, [i]);
+              });
+              Plotly.restyle(gd, {
+                "marker.opacity": [nodes.map(() => 1)],
+                "textfont.color": [nodes.map(() => "black")]
+              }, [edgeTraces.length]);
+            }
+
+            // Hover events
+            gd.on('plotly_hover', data => {
+              if (data.points[0].curveNumber === edgeTraces.length) {
+                const pointIndex = data.points[0].pointIndex;
+                highlightNode(nodes[pointIndex]);
+              }
+            });
+
+            gd.on('plotly_unhover', () => {
+              resetGraph();
+            });
+
+          } 
+          // Vega/Vega-Lite
+          else {
+            vegaEmbed('#' + idiomDivId, spec).catch(console.error);
+          }
+        })
+        .catch(console.error);
+
+      // Description
+      if (idiom.description) {
+        const descEl = document.createElement('p');
+        descEl.className = 'idiom-description';
+        descEl.textContent = idiom.description;
+        
+        descEl.style.lineHeight = "1.5";
+
+          // Reduce spacing specifically for the word cloud description
+        if (idiom.file.includes('word-cloud.json')) {
+            descEl.style.marginTop = '-100px';    // Less space above
+        }
+
+        wrapper.appendChild(descEl);
+      }
+
+      // Optional extra text box
+      if (idiom.extraText) {
+        const extraText = document.createElement('div');
+        extraText.className = 'idiom-textbox';
+        extraText.textContent = idiom.extraText;
+        wrapper.appendChild(extraText);
+      }
+    });
+  </script>
 </body>
 </html>
